@@ -1,0 +1,46 @@
+#include "ArduinoNode.h"
+#include <ros/ros.h>
+#include <tf/transform_broadcaster.h>
+
+
+
+void test(odometry _od)
+{
+static tf::TransformBroadcaster br;
+  tf::Transform transform;
+  transform.setOrigin( tf::Vector3(0, 0, 0.0) );
+  tf::Quaternion q;
+  q.setRPY(0, 0, 0);
+  transform.setRotation(q);
+  br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "avs"));
+}
+
+int main(int argc, char **argv) {
+
+    ros::init(argc, argv, ROSNAME);
+    ros::NodeHandle n;
+    ArduinoNode arduinoNode(n);
+    ros::Rate rate(ROS_RATE);
+
+	
+    while (ros::ok()) {
+	//Update set car values
+	arduinoNode.update();
+	//Publishes the odometry from car.cpp
+	arduinoNode.publishOdometry(arduinoNode.getOdometry());
+        /// calls all callbacks waiting in the queue
+        ros::spinOnce();
+        /// sleep for the time remaining to let us hit our publish rate
+        rate.sleep();
+	test();
+    }
+    return 0;
+}
+
+	
+
+
+
+
+
+
